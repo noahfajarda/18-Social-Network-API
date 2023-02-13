@@ -3,10 +3,13 @@ const router = require('express').Router();
 const { Thought, Reaction } = require('../../models')
 
 //TODO: ROUTE TO GET ALL THOUGHTS
-router.get('/', (req, res) => {
-    Thought.find({}, (err, thoughts) => {
-        res.status(200).json(thoughts)
-    })
+router.get('/', async (req, res) => {
+    try {
+        const thought = await Thought.find();
+        res.status(200).json(thought);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
 })
 
 //TODO: ROUTE TO CREATE A NEW THOUGHT
@@ -21,14 +24,33 @@ router.post('/', async (req, res) => {
 });
 
 //TODO: ROUTE TO GET SINGLE THOUGHT BASED ON THOUGHT ID
-router.get('/:thoughtId', (req, res) => {
-
+router.get('/:thoughtId', async (req, res) => {
+    try {
+        const thought = await Thought.findOne({ "_id": req.params.thoughtId });
+        res.status(200).json(thought);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
 })
 
 //TODO: ROUTE TO UPDATE A THOUGHT
-router.put('/:id', async (req, res) => {
+router.put('/:thoughtId', async (req, res) => {
     try {
-        const thought = await Thought.findOneAndUpdate(req.body);
+        const thought = await Thought.findOneAndUpdate(
+            {
+                // find the matching thoughtID
+                _id: req.params.thoughtId
+            },
+            {
+                // update anything from req.body
+                $set: req.body
+            },
+            {
+                // simple way to validate from model
+                runValidators: true,
+                new: true
+            }
+        );
         res.status(200).json(thought);
     } catch (err) {
         return res.status(500).json(err);
@@ -36,13 +58,50 @@ router.put('/:id', async (req, res) => {
 })
 
 //TODO: ROUTE TO DELETE A THOUGHT BASED ON THOUGHT ID
-router.delete('/:thoughtId', (req, res) => {
-
+router.delete('/:thoughtId', async (req, res) => {
+    try {
+        // find the user & delete them
+        const thought = await Thought.findOneAndDelete(
+            {
+                _id: req.params.thoughtId
+            }
+        );
+        if (!thought) {
+            res.status(400).json("No Thought With This ID.")
+        }
+        res.status(200).json(`Successfully deleted thought: ${thought._id}`);
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json(err);
+    }
 });
 
 //TODO: ROUTE TO ADD REACTION TO A THOUGHT
-router.post('/:thoughtId/reactions', (req, res) => {
-
+router.post('/:thoughtId/reactions/:reactionId', async (req, res) => {
+    try {
+        // then associate the reaction to the thought
+        const user = await Thought.updateOne(
+            {
+                // find the matching thoughtID
+                _id: req.params.thoughtId
+            },
+            {
+                // add the reaction
+                $addToSet: {
+                    reactions: req.params.reactionId
+                }
+            },
+            {
+                // simple way to validate from model
+                runValidators: true,
+                new: true
+            }
+        );
+        res.status(200).json(user);
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json(err);
+    }
 });
 
 //TODO: ROUTE TO DELETE A REACTION ON A THOUGHT
