@@ -5,7 +5,7 @@ const { User, Thought } = require("../../models")
 //TODO - ROUTE THAT GETS ALL THE USERS, include friends?
 router.get('/', async (req, res) => {
     try {
-        const user = await User.find().populate("thoughts");
+        const user = await User.find().populate("thoughts").populate("friends");
         res.status(200).json(user);
     } catch (err) {
         return res.status(500).json(err);
@@ -107,7 +107,7 @@ router.put('/:userId/friends/:friendId', async (req, res) => {
                 new: true
             }
         );
-        res.status(200).json(user);
+        res.status(200).json("Friend Added!");
     } catch (err) {
         console.log(err)
         return res.status(500).json(err);
@@ -137,7 +137,7 @@ router.delete('/:userId/friends/:friendId', async (req, res) => {
                 new: true
             }
         );
-        res.status(200).json(user);
+        res.status(200).json("Friend Removed!");
     } catch (err) {
         console.log(err)
         return res.status(500).json(err);

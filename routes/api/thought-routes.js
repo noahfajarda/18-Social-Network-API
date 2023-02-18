@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
                 new: true
             })
 
-        res.status(200).json(user);
+        res.status(200).json("Thought Created!");
     } catch (err) {
         return res.status(500).json(err);
     }
@@ -81,7 +81,7 @@ router.delete('/:thoughtId', async (req, res) => {
         if (!thought) {
             res.status(400).json("No Thought With This ID.")
         }
-        res.status(200).json(`Successfully deleted thought: ${thought._id}`);
+        res.status(200).json(`Successfully deleted thought with thoughtID: ${thought._id}`);
     } catch (err) {
         console.log(err)
         return res.status(500).json(err);
@@ -109,7 +109,7 @@ router.post('/:thoughtId/reactions', async (req, res) => {
                 new: true
             }
         );
-        res.status(200).json(user);
+        res.status(200).json("Reaction added to thought!");
     } catch (err) {
         console.log(err)
         return res.status(500).json(err);
@@ -139,7 +139,7 @@ router.delete('/:thoughtId/reactions/:reactionId', async (req, res) => {
                 new: true
             }
         );
-        res.status(200).json(user);
+        res.status(200).json("Reaction deleted from thought!");
     } catch (err) {
         console.log(err)
         return res.status(500).json(err);
