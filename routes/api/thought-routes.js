@@ -1,6 +1,6 @@
 
 const router = require('express').Router();
-const { Thought, Reaction } = require('../../models')
+const { Thought, Reaction, User } = require('../../models')
 
 //TODO: ROUTE TO GET ALL THOUGHTS
 router.get('/', async (req, res) => {
@@ -17,7 +17,19 @@ router.post('/', async (req, res) => {
     try {
         // 'thoughtText', 'username'
         const thought = await Thought.create(req.body);
-        res.status(200).json(thought);
+        const user = await User.findOneAndUpdate({
+            _id: req.body.userId
+        },
+            {
+                $push: {
+                    thoughts: thought._id
+                }
+            },
+            {
+                new: true
+            })
+
+        res.status(200).json(user);
     } catch (err) {
         return res.status(500).json(err);
     }
@@ -77,10 +89,10 @@ router.delete('/:thoughtId', async (req, res) => {
 });
 
 //TODO: ROUTE TO ADD REACTION TO A THOUGHT
-router.post('/:thoughtId/reactions/:reactionId', async (req, res) => {
+router.post('/:thoughtId/reactions', async (req, res) => {
     try {
         // then associate the reaction to the thought
-        const user = await Thought.updateOne(
+        const user = await Thought.findOneAndUpdate(
             {
                 // find the matching thoughtID
                 _id: req.params.thoughtId
@@ -88,7 +100,7 @@ router.post('/:thoughtId/reactions/:reactionId', async (req, res) => {
             {
                 // add the reaction
                 $addToSet: {
-                    reactions: req.params.reactionId
+                    reactions: req.body
                 }
             },
             {
@@ -105,8 +117,33 @@ router.post('/:thoughtId/reactions/:reactionId', async (req, res) => {
 });
 
 //TODO: ROUTE TO DELETE A REACTION ON A THOUGHT
-router.delete('/:thoughtId/reactions/:reactionId', (req, res) => {
-
+router.delete('/:thoughtId/reactions/:reactionId', async (req, res) => {
+    try {
+        // then associate the reaction to the thought
+        const user = await Thought.findOneAndUpdate(
+            {
+                // find the matching thoughtID
+                _id: req.params.thoughtId
+            },
+            {
+                // remove the reaction
+                $pull: {
+                    reactions: {
+                        reactionId: req.params.reactionId
+                    }
+                }
+            },
+            {
+                // simple way to validate from model
+                runValidators: true,
+                new: true
+            }
+        );
+        res.status(200).json(user);
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json(err);
+    }
 })
 
 module.exports = router;

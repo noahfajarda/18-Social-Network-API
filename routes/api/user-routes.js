@@ -5,7 +5,7 @@ const { User, Thought } = require("../../models")
 //TODO - ROUTE THAT GETS ALL THE USERS, include friends?
 router.get('/', async (req, res) => {
     try {
-        const user = await User.find();
+        const user = await User.find().populate("thoughts");
         res.status(200).json(user);
     } catch (err) {
         return res.status(500).json(err);
